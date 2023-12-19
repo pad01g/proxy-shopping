@@ -26,7 +26,7 @@ const main = async () => {
 export default function App() {
   main();
   return (
-    <View>
+    <View style={{flex: 1, justifyContent: 'center'}}>
       <Text>Profile fetched from nostr: </Text>
       <StatusBar style="auto" />
       <Link href="/settings">Settings</Link>

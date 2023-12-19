@@ -6,10 +6,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Page() {
   // const rootPubKey = 
   const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [selectedRootPubkey, setSelectedRootPubkey] = useState("");
   // const selectedLanguage = "java";
-  return <View>
+  return <View style={{flex: 1, justifyContent: 'center'}}>
     <Text>Setting page</Text>
-    <Text>Preset:</Text>
     <Picker
       selectedValue={selectedLanguage}
       onValueChange={async (itemValue, itemIndex) => {
@@ -20,8 +20,22 @@ export default function Page() {
           // saving error
         }
       }}>
-      <Picker.Item label="Java" value="java" />
-      <Picker.Item label="JavaScript" value="js" />
+      <Picker.Item label="English" value="english" />
+      <Picker.Item label="日本語" value="japanese" />
+    </Picker>
+
+    <Text>Root pubkey Preset:</Text>
+    <Picker
+      selectedValue={selectedRootPubkey}
+      onValueChange={async (itemValue, itemIndex) => {
+        setSelectedRootPubkey(itemValue)
+        try {
+          await AsyncStorage.setItem('my-key', selectedRootPubkey);
+        } catch (e) {
+          // saving error
+        }
+      }}>
+      <Picker.Item label="Default" value="0x1234....abcd" />
     </Picker>
     <Text>Enter your own key:</Text>
     <TextInput/>
