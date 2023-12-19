@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Link } from 'expo-router';
 
 import bitcoin from "bitcoinjs-lib"
@@ -26,19 +26,10 @@ const main = async () => {
 export default function App() {
   main();
   return (
-    <View style={styles.container}>
+    <View>
       <Text>Profile fetched from nostr: </Text>
       <StatusBar style="auto" />
       <Link href="/settings">Settings</Link>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
