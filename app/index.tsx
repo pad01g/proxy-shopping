@@ -1,35 +1,34 @@
 import { StatusBar } from 'expo-status-bar';
 import { Text, View } from 'react-native';
 import { Link } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import bitcoin from "bitcoinjs-lib"
-// // Import the package
-import NDK from "@nostr-dev-kit/ndk";
-
-const main = async () => {
-  // Create a new NDK instance with explicit relays
-  const ndk = new NDK({
-    explicitRelayUrls: ["ws://10.24.95.91:8080", "wss://nos.lol"],
-  });
-
-  await ndk.connect();
-
-  const pablo = ndk.getUser({
-    npub: "npub1l2vyh47mk2p0qlsku7hg0vn29faehy9hy34ygaclpn66ukqp3afqutajft",
-  });
-  await pablo.fetchProfile();
-
-  const pabloFullProfile = pablo.profile;
-  console.log(pabloFullProfile);
-}
+import { useState } from 'react';
 
 export default function App() {
-  main();
+  const [userPrivateKey, setUserPrivateKey] = useState("");
+  (async () => {
+    const privateKey = await AsyncStorage.getItem('private-key');
+    if (privateKey) {
+      setUserPrivateKey(privateKey);
+    }
+  })();
+
   return (
-    <View style={{flex: 1, justifyContent: 'center'}}>
-      <Text>Profile fetched from nostr: </Text>
+    <View style={{flex: 1, justifyContent: 'center', marginHorizontal: 20}}>
       <StatusBar style="auto" />
-      <Link href="/settings">Settings</Link>
+      {userPrivateKey ? 
+        <>
+          <Link href="/user/settings">Settings</Link>
+          <Link href="/user/trade">Trade History</Link>
+          <Link href="/user/register-seller">Register Seller</Link>
+          <Link href="/user/offer-board">Offer board</Link>
+          <Link href="/admin">Admin pages</Link>
+          <Link href="/user/logout">Logout</Link>
+        </> :
+        <Link href="/user/signin">Sign In</Link>
+      }
     </View>
   );
 }
