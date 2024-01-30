@@ -7,6 +7,7 @@ export default function App() {
     <View style={{flex: 1, justifyContent: 'center', marginHorizontal: 20}}>
       <Text>Profile fetched from nostr: </Text>
       <StatusBar style="auto" />
+      <Link href="./moderator/register-seller">Seller Registration Queue</Link>
       <Link href="./moderator/community">Admin Chat</Link>
       <Link href="./moderator/moderate">Moderation</Link>
       <Link href="./moderator/reports">Reports</Link>

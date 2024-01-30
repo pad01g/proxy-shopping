@@ -4,6 +4,7 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link } from 'expo-router';
 import NDK, { NDKEvent, NDKKind, NDKPrivateKeySigner, NDKUser, NostrEvent } from "@nostr-dev-kit/ndk";
+import { defaultMembers } from '../../lib/config';
 
 enum RegisterSellerStatus {
   Registered = "REGISTERED",
@@ -58,14 +59,17 @@ export default function Page() {
     const user = await signer.user();
     const pubkey = user.pubkey;
 
+    // define PM receiver (in this case, moderators pubkey)
+    const moderatorPubkey = (await new NDKPrivateKeySigner(defaultMembers.moderator.privateKey).user()).pubkey;
+
     // get current verimod status
     // extract moderators list
     // send messages to all moderators
 
     const nostrEvent: NostrEvent = {
-      created_at: (new Date()).getTime(),
+      created_at: Math.floor((new Date()).getTime() / 1000),
       content: "I want to register as a seller",
-      tags: [["register-seller"]],
+      tags: [["p", moderatorPubkey]],
       kind: NDKKind.GroupChat,
       pubkey: pubkey
     };
@@ -76,20 +80,17 @@ export default function Page() {
 
     const event = new NDKEvent(ndk, nostrEvent);
 
-    // define PM receiver (in this case, moderators pubkey)
-    // random pubkey for example
-    const moderatorPubkey = "9f4bd71c892a8989c77cafeec994a6d96d44e84e0a50542cfb8520d1038b7c93";
     // remember which moderators i am referring to
     const moderators = [
       moderatorPubkey
     ];
 
-    await event.encrypt(
-      new NDKUser({pubkey: moderatorPubkey}),
-      signer
-    ).catch(e => {
-      console.log(e);
-    });
+    // await event.encrypt(
+    //   new NDKUser({pubkey: moderatorPubkey}),
+    //   signer
+    // ).catch(e => {
+    //   console.log(e);
+    // });
 
     // @todo check ndk connection status
 
@@ -103,7 +104,7 @@ export default function Page() {
     await AsyncStorage.setItem('register-seller/moderators', JSON.stringify({moderatorsNpub}));
     await AsyncStorage.setItem('register-seller/status', RegisterSellerStatus.Waiting);
 
-    trackSubscriptions(moderatorsNpub);
+    trackSubscriptions(moderators);
   }
 
   return <View style={{flex: 1, justifyContent: 'center', marginHorizontal: 20}}>

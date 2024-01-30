@@ -4,7 +4,8 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link } from 'expo-router';
 import NDK, { NDKEvent, NDKKind, NDKPrivateKeySigner, NDKUser, NostrEvent } from "@nostr-dev-kit/ndk";
-
+import { defaultMembers } from '../../lib/config';
+ 
 export default function Page() {
   const [userInputPrivateKey, setUserInputPrivateKey] = useState("");
   const [userPrivateKey, setUserPrivateKey] = useState("");
@@ -32,9 +33,9 @@ export default function Page() {
     }
   }
 
-  const loginUser = async () => {
+  const loginUser = async (inputKey?: string) => {
     // check if userInputPrivateKey is private key format
-    const signer = new NDKPrivateKeySigner(userInputPrivateKey);
+    const signer = new NDKPrivateKeySigner(inputKey ?? userInputPrivateKey);
     const privateKey = signer.privateKey;
     if (privateKey) {
       const user = await signer.user();
@@ -43,9 +44,52 @@ export default function Page() {
       setUserPrivateKey(privateKey);
       setUserPublicKey(pubkey);
       setMessage(`User successfully logged in.`);
-  }else{
+    }else{
       setMessage(`User login failed.`);
+    }
   }
+
+  const loginAsModerator = async () => {
+    const inputKey = defaultMembers.moderator.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+    await AsyncStorage.setItem('is-moderator', "yes")
+  }
+  const loginAsModeratorManager = async () => {
+    const inputKey = defaultMembers.moderatorManager.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+    await AsyncStorage.setItem('is-moderator-manager', "yes")
+  }
+  const loginAsEscrow = async () => {
+    const inputKey = defaultMembers.escrow.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+    await AsyncStorage.setItem('is-escrow', "yes")
+  }
+  const loginAsEscrowManager = async () => {
+    const inputKey = defaultMembers.escrowManager.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+    await AsyncStorage.setItem('is-escrow-manager', "yes")
+  }
+  const loginAsResourceManager = async () => {
+    const inputKey = defaultMembers.resourceManager.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+    await AsyncStorage.setItem('is-resource-manager', "yes")
+  }
+  const loginAsSeller = async () => {
+    const inputKey = defaultMembers.seller.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+    await AsyncStorage.setItem('is-seller', "yes")
+  }
+  const loginAsCeo = async () => {
+    const inputKey = defaultMembers.ceo.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+    await AsyncStorage.setItem('is-ceo', "yes")
   }
 
   return <View style={{flex: 1, justifyContent: 'center', marginHorizontal: 20}}>
@@ -58,7 +102,14 @@ export default function Page() {
         <Button title="Register User" onPress={registerUser}/>
         <Text>...or, enter your own key:</Text>
         <TextInput style={{ borderBottomWidth : 1.0}} onChangeText={(t) => setUserInputPrivateKey(t)}/>
-        <Button title="Login" onPress={loginUser}/>
+        <Button title="Login" onPress={() => loginUser()}/>
+        <Button title="[Debug] Login as Moderator" onPress={loginAsModerator}/>
+        <Button title="[Debug] Login as Moderator Manager" onPress={loginAsModeratorManager}/>
+        <Button title="[Debug] Login as Escrow" onPress={loginAsEscrow}/>
+        <Button title="[Debug] Login as Escrow Manager" onPress={loginAsEscrowManager}/>
+        <Button title="[Debug] Login as Resource Manager" onPress={loginAsResourceManager}/>
+        <Button title="[Debug] Login as Seller" onPress={loginAsSeller}/>
+        <Button title="[Debug] Login as CEO" onPress={loginAsCeo}/>
       </>
     }
     {message ? <Text>Message: {message}</Text> : <></> }

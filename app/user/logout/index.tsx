@@ -9,6 +9,7 @@ export default function Page() {
   (async () => {
     await AsyncStorage.removeItem('private-key');
     // remove other entries here. but some entries like language settings should be preserved.
+    await AsyncStorage.clear();
   })()
   return <Redirect href="/" />;
 }
