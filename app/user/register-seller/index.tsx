@@ -68,7 +68,7 @@ export default function Page() {
 
     const nostrEvent: NostrEvent = {
       created_at: Math.floor((new Date()).getTime() / 1000),
-      content: "I want to register as a seller",
+      content: "/RegisterSeller I want to register as a seller",
       tags: [["p", moderatorPubkey]],
       kind: NDKKind.GroupChat,
       pubkey: pubkey
