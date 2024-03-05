@@ -122,8 +122,8 @@ export default function Page() {
               <p>id: {offer.id}</p>
               <p>contents: {offer.content}</p>
               <p>public key: {offer.pubkey}</p>
-              <Button title="Contact him" theme="primary" onPress={() => addContact(offer.id)} />
-              <Button title="Report User" theme="secondary" onPress={() => addReport(offer.id)} />
+              <Button title="Contact him" theme="primary" onPress={() => addContact(offer.pubkey)} />
+              <Button title="Report User" theme="secondary" onPress={() => addReport(offer.pubkey)} />
             </div>
           </li>
         })}
