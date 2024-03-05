@@ -49,6 +49,11 @@ export default function Page() {
     }
   }
 
+  const loginAsNormalUser = async () => {
+    const inputKey = defaultMembers.normalUser.privateKey;
+    setUserInputPrivateKey(inputKey);
+    await loginUser(inputKey);
+  }
   const loginAsModerator = async () => {
     const inputKey = defaultMembers.moderator.privateKey;
     setUserInputPrivateKey(inputKey);
@@ -84,6 +89,7 @@ export default function Page() {
     setUserInputPrivateKey(inputKey);
     await loginUser(inputKey);
     await AsyncStorage.setItem('is-seller', "yes")
+    await AsyncStorage.setItem('register-seller/certificate', defaultMembers.seller.cert);
   }
   const loginAsCeo = async () => {
     const inputKey = defaultMembers.ceo.privateKey;
@@ -103,6 +109,7 @@ export default function Page() {
         <Text>...or, enter your own key:</Text>
         <TextInput style={{ borderBottomWidth : 1.0}} onChangeText={(t) => setUserInputPrivateKey(t)}/>
         <Button title="Login" onPress={() => loginUser()}/>
+        <Button title="[Debug] Login as Normal User" onPress={loginAsNormalUser}/>
         <Button title="[Debug] Login as Moderator" onPress={loginAsModerator}/>
         <Button title="[Debug] Login as Moderator Manager" onPress={loginAsModeratorManager}/>
         <Button title="[Debug] Login as Escrow" onPress={loginAsEscrow}/>

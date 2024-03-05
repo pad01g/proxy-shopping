@@ -38,7 +38,7 @@ export default function Page() {
                 eventWithStatus.status = `replied`
                 setModeratorRequestQueue(q => ({...q, [event.id]: eventWithStatus}))
                 // stop subscription here
-                subscriptionToEvent.unsubscribe();
+                subscriptionToEvent.stop();
               });
               return ({
                 ...queue,

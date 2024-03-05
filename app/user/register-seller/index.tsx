@@ -1,6 +1,6 @@
 import { Button, Text, TextInput, View } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link } from 'expo-router';
 import NDK, { NDKEvent, NDKKind, NDKPrivateKeySigner, NDKUser, NostrEvent } from "@nostr-dev-kit/ndk";
@@ -16,6 +16,7 @@ enum RegisterSellerStatus {
 export default function Page() {
 
   const [registerSellerStatus, setRegisterSellerStatus] = useState(RegisterSellerStatus.NotRegistered);
+  const [registerSellerCertificate, setRegisterSellerCertificate] = useState("");
   AsyncStorage.getItem('register-seller/status').then((status) => {
     if (status && status in RegisterSellerStatus){
       setRegisterSellerStatus(status as RegisterSellerStatus);
@@ -31,18 +32,38 @@ export default function Page() {
       const moderators = await AsyncStorage.getItem('register-seller/moderators');
       if (moderators){
         const moderatorsList = JSON.parse(moderators);
-        trackSubscriptions(moderatorsList);  
+        await trackSubscriptions(moderatorsList);  
       }
     }
   });
 
-  const trackSubscriptions = (npubs: string[]) => {
-    const subscription = ndk.subscribe({ kinds: [NDKKind.GroupChat], authors: npubs });
+  const trackSubscriptions = async (npubs: string[]) => {
+    console.log(`starting to track subscriptions`);
+    // const subscription = ndk.subscribe({ kinds: [NDKKind.GroupChat], authors: npubs });
     // show messages as chat logs in view
-    subscription.on("event", (event: NDKEvent) => {
-      // update `registerSellerStatus`
-    })
-    subscription.on("eose", () => {})
+    // subscribe to reply note or public keys
+    const publishResultId = await AsyncStorage.getItem('register-seller/publish-result-id');
+    if (publishResultId) {
+      const subscriptionToEvent = ndk.subscribe({ kinds: [NDKKind.GroupChat], "#e": [publishResultId] });
+      subscriptionToEvent.on("event", async (event: NDKEvent) => {
+        console.log(`replied by mod: ${event.content}`);
+        // moderator accepted or rejected event
+        if (event.content.includes("I approved your request")){
+          await AsyncStorage.setItem('register-seller/status', RegisterSellerStatus.Registered);
+          const cert = JSON.stringify(await event.toNostrEvent());
+          console.log({event, cert});
+          // @todo this cert should self-validate
+          setRegisterSellerCertificate(cert);
+          await AsyncStorage.setItem('register-seller/certificate', cert);
+          setRegisterSellerStatus(RegisterSellerStatus.Registered);
+          await AsyncStorage.setItem('is-seller', "yes")
+        }else{
+          await AsyncStorage.setItem('register-seller/status', RegisterSellerStatus.Rejected);
+          setRegisterSellerStatus(RegisterSellerStatus.Rejected);
+        }
+        subscriptionToEvent.stop();
+      });
+    }
   }
 
   // post direct message to multiple moderators. moderator must be validated by verimod.
@@ -103,15 +124,22 @@ export default function Page() {
 
     await AsyncStorage.setItem('register-seller/moderators', JSON.stringify({moderatorsNpub}));
     await AsyncStorage.setItem('register-seller/status', RegisterSellerStatus.Waiting);
+    await AsyncStorage.setItem('register-seller/publish-result-id', event.id);
 
-    trackSubscriptions(moderators);
+    await trackSubscriptions(moderators);
   }
+
+  const init = async () => {
+    await trackSubscriptions([]);
+  }
+  useEffect(() => {init()}, []);
 
   return <View style={{flex: 1, justifyContent: 'center', marginHorizontal: 20}}>
     {registerSellerStatus === RegisterSellerStatus.NotRegistered?
       <Button title="Register Seller" onPress={registerSeller}/>:
       <>
-        <Text>Registration status: {}</Text>
+        <Text>Registration status: {registerSellerStatus}</Text>
+        <Text>Registration certificate: {registerSellerCertificate}</Text>
         <Text>Registration chat log:</Text>
       </>
     }
