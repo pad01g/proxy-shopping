@@ -27,17 +27,16 @@ export default function Page() {
         console.log(`try subscription`);
         subscription.on("event", (event: NDKEvent) => {
           console.log("before set state", event.id, event, moderatorRequestQueue, Object.values(moderatorRequestQueue))
-          // add message to queue if message contains `#RegisterSeller` or something
+          // add message to queue if message contains `/RegisterSeller` or something
           if (event.content.includes("/RegisterSeller")){
             const status = "not-replied";
-
-            // @todo moderator request is registered here, and updated later below this code
+            const eventWithStatus = {...event, status: status};
             setModeratorRequestQueue(queue => {
-              const eventWithStatus = {...event, status: status};
               const subscriptionToEvent = ndk.subscribe({ kinds: [NDKKind.GroupChat], "#e": [event.id] });
               subscriptionToEvent.on("event",  (childEvent: NDKEvent) => {
                 console.log(`found some replies to ${event.id}, ${childEvent.id}`);
                 eventWithStatus.status = `replied`
+                setModeratorRequestQueue(q => ({...q, [event.id]: eventWithStatus}))
                 // stop subscription here
                 subscriptionToEvent.unsubscribe();
               });
@@ -46,24 +45,6 @@ export default function Page() {
                 [event.id]: eventWithStatus,
               });
             })
-            // load related contents here.
-            // subscriptionToEvent.on("event",  (childEvent: NDKEvent) => {
-              // if i already approved or rejected the post, set status
-              // eventWithStatus.status = `replied`
-              // setModeratorRequestQueue(queue => {
-              //   for(let key in Object.keys(queue)) {
-              //     if (queue[key] && queue[key].id === event.id){
-              //       console.log(`some data in moderator request queue match: ${event.id}`);
-              //       queue[key].status = `replied`
-              //     }
-              //   }
-              //   console.log(JSON.stringify({
-              //     msg: `possibly updated queue`,
-              //     queue
-              //   }));
-              //   return queue;
-              // });
-            // })
           }
           console.log("after set state", Object.values(moderatorRequestQueue), queue, moderatorRequestQueue)
         })
