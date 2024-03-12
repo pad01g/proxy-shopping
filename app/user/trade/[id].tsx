@@ -1,5 +1,4 @@
 import { Button, Text, TextInput, View } from 'react-native';
-import {Picker} from '@react-native-picker/picker';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, useLocalSearchParams } from 'expo-router';
@@ -22,7 +21,7 @@ export default function Route() {
     const messageHistoryList: NostrEvent[] = messageHistory ? JSON.parse(messageHistory) : [];
     // remove duplicate message
     const unique = messageHistoryList.reduce((prev, curr) => ({...prev, [curr.id ?? ""]: curr}), {})
-    const filtered = Object.values<NostrEvent>(unique).filter(message => message.id)
+    const filtered = Object.values<NostrEvent>(unique).filter(message => message.id).sort((a,b) => a.created_at - b.created_at)
     console.log({filtered})
     setMessageQueue(filtered);
   }
@@ -39,7 +38,6 @@ export default function Route() {
     console.log({myPubKey, messageQueue})
 
     ndk.connect().then(async () => {
-      // const subscription = ndk.subscribe({ kinds: [NDKKind.GroupChat], "#p": [recipientPubKey] });
       const subscription = ndk.subscribe({ kinds: [NDKKind.GroupChat], "#p": [myPubKey] });
       console.log(`try subscription`);
       subscription.on("event", async (event: NDKEvent) => {
@@ -55,8 +53,6 @@ export default function Route() {
         }
         const eventTargetTagPubKey = eventTargetTag[1];
 
-        console.log({pubkey: eventTargetTagPubKey, event})
-        // if (event.pubkey === recipientPubKey){
         if (eventTargetTagPubKey === myPubKey && event.pubkey === recipientPubKey){
           // decrypt
           let decrypted: NostrEvent;
@@ -75,10 +71,10 @@ export default function Route() {
           }
 
           setMessageQueue(queue => {
-            return ([
+            return ([...new Set([
               ...queue,
               decrypted
-            ])
+            ])]).sort((a,b) => a.created_at - b.created_at)
           });
         }
       })
@@ -138,7 +134,12 @@ export default function Route() {
       await AsyncStorage.setItem(`trade-message-${recipientPubKey}`, JSON.stringify(messageHistoryList));
 
       // reload
-      await loadMessage();
+      setMessageQueue(queue => {
+        return ([
+          ...queue,
+          messageObject
+        ])
+      });
     });
   }
 
@@ -146,7 +147,6 @@ export default function Route() {
     <Text>Trade with user {id}</Text>
     <div>
       {messageQueue.filter(message => message.id).map((message) => {
-        console.log({message})
         return <div key={message.id + "-" + message.created_at}>
           <p>{message.content}</p>
         </div>
