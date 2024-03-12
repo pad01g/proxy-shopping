@@ -89,7 +89,7 @@ export default function Page() {
     setUserInputPrivateKey(inputKey);
     await loginUser(inputKey);
     await AsyncStorage.setItem('is-seller', "yes")
-    await AsyncStorage.setItem('register-seller/certificate', defaultMembers.seller.cert);
+    await AsyncStorage.setItem('register-seller/certificate', defaultMembers.seller.cert ?? "");
   }
   const loginAsCeo = async () => {
     const inputKey = defaultMembers.ceo.privateKey;

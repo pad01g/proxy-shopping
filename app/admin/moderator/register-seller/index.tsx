@@ -3,7 +3,7 @@ import {Picker} from '@react-native-picker/picker';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link } from 'expo-router';
-import NDK, { NDKEvent, NDKKind, NDKPrivateKeySigner } from '@nostr-dev-kit/ndk';
+import NDK, { NDKEvent, NDKKind, NDKPrivateKeySigner, NostrEvent } from '@nostr-dev-kit/ndk';
 
 export default function Page() {
   const [isModerator, setIsModerator] = useState(false);
@@ -46,7 +46,7 @@ export default function Page() {
               });
             })
           }
-          console.log("after set state", Object.values(moderatorRequestQueue), queue, moderatorRequestQueue)
+          console.log("after set state", Object.values(moderatorRequestQueue), moderatorRequestQueue)
         })
       });
   
@@ -57,6 +57,9 @@ export default function Page() {
   const makeMessage = async (srcNoteId: string, candidatePubkey: string, message: string) => {
     // reply to `pubkey`
     const privateKey = await AsyncStorage.getItem('private-key')
+    if (!privateKey) {
+      return;
+    }
     const signer = new NDKPrivateKeySigner(privateKey);
     const pubKey = (await new NDKPrivateKeySigner(privateKey).user()).pubkey;
 

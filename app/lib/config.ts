@@ -1,4 +1,4 @@
-export const defaultMembers: {[key:string]: {privateKey: string}} = {
+export const defaultMembers: {[key:string]: {privateKey: string, cert?: string}} = {
     normalUser: {
         privateKey: "e3190337e0efd18c344fb2e1dbfe0066b3a9c44164f8780b0092cbda48cc265e",
     },
