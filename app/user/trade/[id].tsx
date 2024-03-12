@@ -11,6 +11,8 @@ export default function Route() {
   const [messageQueue, setMessageQueue] = useState<NostrEvent[]>([]);
   const [showAppOptions, setShowAppOptions] = useState(false);
   const [messageTextInput, setMessageTextInput] = useState("");
+  const [showEscrowHelpOptions, setShowEscrowHelpOptions] = useState(false);
+  const [escrowHelpTextInput, setEscrowHelpTextInput] = useState("");
 
   const ndk = new NDK({
     explicitRelayUrls: ["ws://10.24.95.91:8080", "wss://nos.lol"],
@@ -90,7 +92,7 @@ export default function Route() {
     const signer = new NDKPrivateKeySigner(privateKey);
     const myPubKey = (await new NDKPrivateKeySigner(privateKey).user()).pubkey;
 
-    // latest message id
+    // @todo latest message id
     const targetId = ""
     // write message `messageTextInput` to `recipientPubKey`
     const nostrEvent: NostrEvent = {
@@ -143,6 +145,8 @@ export default function Route() {
     });
   }
 
+  const submitEscrowHelpMessage = async () => {}
+
   return <View style={{flex: 1, justifyContent: 'center', marginHorizontal: 20}}>
     <Text>Trade with user {id}</Text>
     <div>
@@ -166,6 +170,21 @@ export default function Route() {
       </View>
     ) : (
       <Button title="Message" onPress={() => setShowAppOptions(true)}/>
+    )}
+    {showEscrowHelpOptions ? (
+      <View>
+        <TextInput
+          multiline={true}
+          numberOfLines={4}
+          onChangeText={(text) => setEscrowHelpTextInput(text)}
+          value={messageTextInput}
+        />
+
+        <Button title="Submit" onPress={submitEscrowHelpMessage} />
+        <Button title="Cancel" onPress={() => setShowEscrowHelpOptions(false)} />
+      </View>
+    ) : (
+      <Button title="Dispute" onPress={() => setShowEscrowHelpOptions(true)}/>
     )}
     <Link href="/">Home</Link>
   </View>;
